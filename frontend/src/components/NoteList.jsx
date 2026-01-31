@@ -6,14 +6,18 @@ function NoteList({ notes }) {
 
   return (
     <div className="note-list">
-      {Object.entries(notes).map(([title, description]) => {
-        return (
-          <div key={title} className="note-card">
-            <h2>{title}</h2>
-            <p>{description}</p>
-          </div>
-        );
-      })}
+      {Object.entries(notes).length === 0 ? (
+        <p>No notes yet. Add one below!</p>
+      ) : (
+        Object.entries(notes).map(([title, description]) => {
+          return (
+            <div key={title} className="note-card">
+              <h2>{title}</h2>
+              <p>{description}</p>
+            </div>
+          );
+        })
+      )}
     </div>
   );
 }

@@ -22,10 +22,7 @@ function App() {
 
   const handleSubmit = async (title, description) => {
     // const formData = new FormData(e.target);
-    const note = {
-      title: title,
-      description: description,
-    };
+    const note = { title, description };
     const response = await fetch("http://127.0.0.1:8000/add_note", {
       method: "POST",
       headers: {
