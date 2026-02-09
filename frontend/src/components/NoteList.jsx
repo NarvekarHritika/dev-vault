@@ -1,6 +1,6 @@
 // src/components/NoteList.jsx
 
-function NoteList({ notes }) {
+function NoteList({ notes, onDelete }) {
   // Defensive check: if notes is null (loading state), don't render anything
   if (!notes) return null;
 
@@ -14,6 +14,12 @@ function NoteList({ notes }) {
             <div key={title} className="note-card">
               <h2>{title}</h2>
               <p>{description}</p>
+              <button
+                onClick={() => onDelete(title)}
+                style={{ backgroundColor: "red", color: "white" }}
+              >
+                Delete
+              </button>
             </div>
           );
         })

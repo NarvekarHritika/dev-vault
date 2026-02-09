@@ -43,6 +43,24 @@ function App() {
     const result = await response.json();
     console.log(result);
   };
+
+  const handleDelete = async (title) => {
+    const response = await fetch(
+      "http://127.0.0.1:8000/delete_note?title=${title}",
+      {
+        method: "DELETE",
+      },
+    );
+    if (response.ok) {
+      setNotes((prevNotes) => {
+        const newNotes = { ...prevNotes };
+        delete newNotes[title];
+        return newNotes;
+      });
+    } else {
+      console.error("Failed to delete note");
+    }
+  };
   // 1. If loading, stop here and show the loading UI
   if (isLoading) {
     return <div className="loading">Checking your vault...</div>;
@@ -52,7 +70,7 @@ function App() {
   return (
     <>
       <NoteForm onAddNote={handleSubmit} />
-      <NoteList notes={notes} />
+      <NoteList notes={notes} onDelete={handleDelete} />
     </>
   );
 }
