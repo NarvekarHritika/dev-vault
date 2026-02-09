@@ -5,25 +5,26 @@ function NoteList({ notes, onDelete }) {
   if (!notes) return null;
 
   return (
-    <div className="note-list">
-      {Object.entries(notes).length === 0 ? (
-        <p>No notes yet. Add one below!</p>
-      ) : (
-        Object.entries(notes).map(([title, description]) => {
-          return (
-            <div key={title} className="note-card">
-              <h2>{title}</h2>
-              <p>{description}</p>
-              <button
-                onClick={() => onDelete(title)}
-                style={{ backgroundColor: "red", color: "white" }}
-              >
-                Delete
-              </button>
-            </div>
-          );
-        })
-      )}
+    <div className="grid gap-4">
+      {Object.entries(notes).map(([title, description]) => (
+        <div
+          key={title}
+          className="bg-white p-5 rounded-lg shadow-sm border-l-4 border-blue-500 flex justify-between items-start"
+        >
+          {/* The container for Title and Description */}
+          <div className="text-left">
+            <h3 className="font-bold text-lg">{title}</h3>
+            <p className="text-gray-600 mt-1">{description}</p>
+          </div>
+
+          <button
+            onClick={() => onDelete(title)}
+            className="text-red-500 text-sm font-medium  hover:bg-red-50 p-2 rounded-full transition"
+          >
+            Delete
+          </button>
+        </div>
+      ))}
     </div>
   );
 }

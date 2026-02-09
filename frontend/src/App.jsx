@@ -69,8 +69,17 @@ function App() {
   // 2. If not loading, React proceeds to this return
   return (
     <>
-      <NoteForm onAddNote={handleSubmit} />
-      <NoteList notes={notes} onDelete={handleDelete} />
+      <div className="min-h-screen bg-gray-100 p-8">
+        {/* Remove 'mx-auto' and 'text-center' */}
+        <div className="max-w-2xl text-left">
+          <h1 className="text-3xl font-bold mb-8 text-blue-600">Dev Vault</h1>
+          <NoteForm onAddNote={handleSubmit} />
+          <NoteList notes={notes} onDelete={handleDelete} />
+        </div>
+      </div>
+
+      {/* <NoteForm onAddNote={handleSubmit} />
+      <NoteList notes={notes} onDelete={handleDelete} /> */}
     </>
   );
 }
