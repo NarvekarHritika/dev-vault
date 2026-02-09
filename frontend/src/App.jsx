@@ -11,6 +11,7 @@ function App() {
   // }
   const [isLoading, setIsLoading] = useState(true);
   const [notes, setNotes] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/notes")
@@ -46,7 +47,7 @@ function App() {
 
   const handleDelete = async (title) => {
     const response = await fetch(
-      "http://127.0.0.1:8000/delete_note?title=${title}",
+      `http://127.0.0.1:8000/delete_note?title=${title}`,
       {
         method: "DELETE",
       },
@@ -61,6 +62,20 @@ function App() {
       console.error("Failed to delete note");
     }
   };
+  const filteredNotes = notes
+    ? Object.fromEntries(
+        Object.entries(notes).filter(
+          ([title, description]) =>
+            // Fallback to empty string if title or searchQuery is somehow missing
+            (title || "")
+              .toLowerCase()
+              .includes((searchQuery || "").toLowerCase()) ||
+            (description || "")
+              .toLowerCase()
+              .includes((searchQuery || "").toLowerCase()),
+        ),
+      )
+    : null;
   // 1. If loading, stop here and show the loading UI
   if (isLoading) {
     return <div className="loading">Checking your vault...</div>;
@@ -74,7 +89,16 @@ function App() {
         <div className="max-w-2xl text-left">
           <h1 className="text-3xl font-bold mb-8 text-blue-600">Dev Vault</h1>
           <NoteForm onAddNote={handleSubmit} />
-          <NoteList notes={notes} onDelete={handleDelete} />
+          <div className="mb-6">
+            <input
+              type="text"
+              placeholder="Search notes..."
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <NoteList notes={filteredNotes} onDelete={handleDelete} />
         </div>
       </div>
 
