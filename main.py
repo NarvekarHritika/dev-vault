@@ -1,9 +1,12 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.concurrency import run_in_threadpool  # Important for AI blocking
+from sqlalchemy.exc import IntegrityError
 from fastapi.middleware.cors import CORSMiddleware
 from schemas import CreateNote
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from database import get_async_session, Note, create_db_and_tables
+from ai_service import summarize_text
 
 # import time
 app = FastAPI()
@@ -16,12 +19,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-notes = {
-    "Buy groceries": "Buy chicken, eggs, flour, etc",
-    "Dance": "Dance on Aespa Drama song",
-    "Play a Game": "Play Ludo with friends",
-}
-
 
 @app.on_event("startup")
 async def on_startup():
@@ -33,7 +30,10 @@ async def get_notes(session: AsyncSession = Depends(get_async_session)):
     # time.sleep(2)
     result = await session.execute(select(Note))
     dbnotes = result.scalars().all()
-    return {notes.title: notes.description for notes in dbnotes}
+    return {
+        note.title: {"description": note.description, "summary": note.summary}
+        for note in dbnotes
+    }
 
 
 @app.get("/")
@@ -50,10 +50,28 @@ async def add_note(
     #     return {"status": "error", "message": "Note title already exists"}
     # notes[params.title]= params.description
     # return {"status": "success", "data": params}
-    new_note = Note(title=params.title, description=params.description)
-    session.add(new_note)
-    await session.commit()
-    return {"status": "success", "data": params}
+    ai_summary = await run_in_threadpool(summarize_text, params.description)
+    new_note = Note(
+        title=params.title, description=params.description, summary=ai_summary
+    )
+    try:
+        session.add(new_note)
+        await session.commit()
+
+    except IntegrityError:
+        await session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A note with this title already exists.",
+        )
+    return {
+        "status": "success",
+        "data": {
+            "title": params.title,
+            "description": params.description,
+            "summary": ai_summary,
+        },
+    }
 
 
 @app.delete("/delete_note")

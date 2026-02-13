@@ -35,14 +35,17 @@ function App() {
       throw new Error(`Failed to add note. status: ${response.status}`);
     } else {
       // 1. Update the local UI state so the new note appears instantly
+      const result = await response.json();
+      console.log(result.data);
+      const newNoteData = result.data;
       setNotes((prevNotes) => ({
         ...prevNotes,
-        [title]: description,
+        [result.data.title]: {
+          description: newNoteData.description,
+          summary: newNoteData.summary,
+        },
       }));
     }
-
-    const result = await response.json();
-    console.log(result);
   };
 
   const handleDelete = async (title) => {
@@ -64,18 +67,21 @@ function App() {
   };
   const filteredNotes = notes
     ? Object.fromEntries(
-        Object.entries(notes).filter(
-          ([title, description]) =>
-            // Fallback to empty string if title or searchQuery is somehow missing
-            (title || "")
-              .toLowerCase()
-              .includes((searchQuery || "").toLowerCase()) ||
-            (description || "")
-              .toLowerCase()
-              .includes((searchQuery || "").toLowerCase()),
-        ),
+        Object.entries(notes).filter(([title, noteData]) => {
+          // Fallback to empty string if title or searchQuery is somehow missing
+          const search = (searchQuery || "").toLowerCase();
+          const desc =
+            typeof noteData === "string" ? noteData : noteData.description;
+          const summary = typeof noteData === "object" ? noteData.summary : "";
+          return (
+            (title || "").toLowerCase().includes(search) ||
+            (desc || "").toLowerCase().includes(search) ||
+            (summary || "").toLowerCase().includes(search)
+          );
+        }),
       )
     : null;
+
   // 1. If loading, stop here and show the loading UI
   if (isLoading) {
     return <div className="loading">Checking your vault...</div>;
@@ -86,7 +92,7 @@ function App() {
     <>
       <div className="min-h-screen bg-gray-100 p-8">
         {/* Remove 'mx-auto' and 'text-center' */}
-        <div className="max-w-2xl text-left">
+        <div className="max-w-6xl text-left">
           <h1 className="text-3xl font-bold mb-8 text-blue-600">Dev Vault</h1>
           <NoteForm onAddNote={handleSubmit} />
           <div className="mb-6">

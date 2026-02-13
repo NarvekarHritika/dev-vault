@@ -2,6 +2,7 @@ import datetime
 import uuid
 
 from collections.abc import AsyncGenerator
+from typing import Optional
 from sqlalchemy import String, DateTime
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.ext.asyncio import (
@@ -31,6 +32,7 @@ class Note(Base):
     )
     title: Mapped[str] = mapped_column(String)
     description: Mapped[str] = mapped_column(String)
+    summary: Mapped[Optional[str]] = mapped_column(String, nullable=True)  # New Field
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc)
     )
